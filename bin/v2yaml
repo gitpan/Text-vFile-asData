@@ -3,9 +3,9 @@ use strict;
 use warnings;
 use lib qw(lib);
 use IO::File;
-use Parse::vFile;
+use Text::vFile::asData;
 use YAML;
 
 foreach(@ARGV) {
-    print Dump( Parse::vFile->new->parse( IO::File->new( $_ ) ) )
+    print Dump( Text::vFile::asData->new->parse( IO::File->new( $_ ) ) )
 }
