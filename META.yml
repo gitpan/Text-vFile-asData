@@ -1,0 +1,16 @@
+--- #YAML:1.0
+name: Text-vFile-asData
+version: 0.01
+author:
+  - ~
+abstract: parse vFile formatted files into data structures
+license: perl
+requires:
+  perl: 5.006
+build_requires:
+  Test::More: 0
+provides:
+  Text::vFile::asData:
+    file: lib/Text/vFile/asData.pm
+    version: 0.01
+generated_by: Module::Build version 0.23
