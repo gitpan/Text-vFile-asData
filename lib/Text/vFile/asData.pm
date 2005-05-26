@@ -2,10 +2,9 @@ package Text::vFile::asData;
 use strict;
 use warnings;
 no warnings 'uninitialized';
-use Text::ParseWords qw( parse_line );
 use base qw( Class::Accessor::Chained::Fast );
 __PACKAGE__->mk_accessors(qw( preserve_params ));
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 NAME
 
@@ -25,23 +24,18 @@ vCalendar (RFC 2445).
 
 =cut
 
-sub _lines_from_fh {
-    my $self = shift;
-    my $fh = shift;
-
-    return map { chomp; s/\r$//; $_ } <$fh>;
-}
-
 sub _unwrap_lines {
     my $self = shift;
     my @lines;
     for (@_) {
-        if (/^\s(.*)/) { # Continuation line (RFC Sect. 4.1)
+        my $line = $_; # $_ may be readonly
+        $line =~ s{[\r\n]+$}{}; # lines SHOULD end CRLF
+        if ($line =~ /^\s(.*)/) { # Continuation line (RFC Sect. 4.1)
             die "Continuation line, but no preceding line" unless @lines;
             $lines[-1] .= $1;
             next;
         }
-        push @lines, $_;
+        push @lines, $line;
     }
     return @lines;
 }
@@ -49,7 +43,53 @@ sub _unwrap_lines {
 sub parse {
     my $self = shift;
     my $fh = shift;
-    return $self->parse_lines( $self->_lines_from_fh( $fh ) );
+    return $self->parse_lines( <$fh> );
+}
+
+# like Text::ParseWords' parse_line, only C-style so the regex engine doesn't
+# blow its stack, and it's also got a $limit like split
+
+# this only took a trainride, so I'm pretty sure there are lurking
+# corner cases - when I get a tuit I'll take the Text::ParseWords
+# tests and run them through it
+
+sub parse_line {
+    my ($delim, $keep, $text, $limit) = @_;
+
+    my ($current, @parts);
+    my ($quote, $escaped);
+    while (length $text) {
+        if ($text =~ s{^(\\)}{}) {
+            $current .= $1 if $escaped || $keep;
+            $escaped = !$escaped;
+            next;
+        }
+        if (!$quote && !$escaped && $text =~ s{^$delim}{}) {
+            push @parts, $current;
+            $current = undef;
+            if (defined $limit && @parts == $limit -1) {
+                return @parts, $text;
+            }
+        }
+        else {
+            # pull the character off to take a looksee
+            $text =~ s{(.)}{};
+            my $char = $1;
+            if ($char =~ m{['"]} && !$escaped) {
+                # either it's defined and matches, in which case we
+                # clear the quote variable, or it's undefined which
+                # makes this quote an opening quote
+                $quote = (defined $quote && $char eq $quote) ? undef : $char;
+                $current .= $char if $keep;
+            }
+            else {
+                $current .= $char;
+            }
+        }
+        $escaped = 0;
+    }
+
+    return @parts, $current;
 }
 
 sub parse_lines {
@@ -74,21 +114,10 @@ sub parse_lines {
             next;
         }
 
-        # Text::ParseWords really needs a limit argument, like split,
-        # to say "into at most $n hunks" - here we'd want 2 rather
-        # than the extra work of the join
-        my ($name, @values) = parse_line( ':', 1, $_ );
-        my $value = join(':', @values);
-
-        unless ($name) {
-            # Text::ParseWords seems to get confused if there are no
-            # quoted words
-
-            # print "didn't parse a name from '$_'\n";
-            # next;
-            ($name, $value) = split /:/, $_, 2;
-        }
-        my @params = parse_line( ';', 0, $name);
+        # we'd use Text::ParseWords here, but it likes to segfault.
+        my ($name, $value) = parse_line( ':', 1, $_, 2);
+        $value = '' unless defined $value;
+        my @params = parse_line( ';', 0, $name );
         $name = shift @params;
 
         $value = { value => $value };

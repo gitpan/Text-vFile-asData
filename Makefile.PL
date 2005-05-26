@@ -2,13 +2,13 @@
 use ExtUtils::MakeMaker;
 WriteMakefile
 (
+          'PL_FILES' => {},
+          'INSTALLDIRS' => 'site',
           'NAME' => 'Text::vFile::asData',
           'VERSION_FROM' => 'lib/Text/vFile/asData.pm',
           'PREREQ_PM' => {
-                           'Class::Accessor::Chained' => '0',
-                           'Test::More' => '0'
-                         },
-          'INSTALLDIRS' => 'site',
-          'PL_FILES' => {}
+                           'Test::More' => 0,
+                           'Class::Accessor::Chained' => 0
+                         }
         )
 ;
