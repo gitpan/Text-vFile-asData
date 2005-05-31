@@ -1,6 +1,6 @@
 ---
 name: Text-vFile-asData
-version: 0.03
+version: 0.04
 author: ~
 abstract: parse vFile formatted files into data structures
 license: perl
@@ -12,5 +12,5 @@ build_requires:
 provides:
   Text::vFile::asData:
     file: lib/Text/vFile/asData.pm
-    version: 0.03
+    version: 0.04
 generated_by: Module::Build version 0.261

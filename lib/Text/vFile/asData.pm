@@ -4,7 +4,7 @@ use warnings;
 no warnings 'uninitialized';
 use base qw( Class::Accessor::Chained::Fast );
 __PACKAGE__->mk_accessors(qw( preserve_params ));
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 =head1 NAME
 
@@ -30,7 +30,7 @@ sub _unwrap_lines {
     for (@_) {
         my $line = $_; # $_ may be readonly
         $line =~ s{[\r\n]+$}{}; # lines SHOULD end CRLF
-        if ($line =~ /^\s(.*)/) { # Continuation line (RFC Sect. 4.1)
+        if ($line =~ /^[ \t](.*)/) { # Continuation line (RFC Sect. 4.1)
             die "Continuation line, but no preceding line" unless @lines;
             $lines[-1] .= $1;
             next;
@@ -102,14 +102,15 @@ sub parse_lines {
         # input.  Not sure about completely blank lines within the input
         next if scalar @path == 0 and $_ =~ /^\s*$/;
 
-        if (/^BEGIN:(.*)/) {
+        if (/^BEGIN:(.*)/i) {
             push @path, $current;
             $current = { type => $1 };
             push @{ $path[-1]{objects} }, $current;
             next;
         }
-        if (/^END:(.*)/) {
-            die "END $1 in $current->{type}" unless $current->{type} eq $1;
+        if (/^END:(.*)/i) {
+            die "END $1 in $current->{type}"
+              unless lc $current->{type} eq lc $1;
             $current = pop @path;
             next;
         }
@@ -131,10 +132,15 @@ sub parse_lines {
         push @{ $current->{properties}{ $name } }, $value;
     }
 
+    # something did a BEGIN but no END - TODO, unwind this nicely as
+    # it may be more than one level
+    die "BEGIN $current->{type} without matching END"
+      if @path;
+
     return $current;
 }
 
-# this might not strictly comply, certainly it doesn't wrap.
+# this might not strictly comply
 sub generate_lines {
     my $self = shift;
     my $this = shift;
@@ -157,7 +163,11 @@ sub generate_lines {
                         "$_" . (defined $hash->{$_} ?  "=" . $hash->{$_} : "")
                     } keys %$hash
                 } @{ $value->{params} || [ $value->{param} ] };
-                push @lines, "$name$param:$value->{value}";
+                my $line = "$name$param:$value->{value}";
+                # wrapping, but done ugly
+                my @chunks = $line =~ m/(.{1,72})/g;
+                push @lines, shift @chunks;
+                push @lines, map { " $_" } @chunks;
             }
         }
     }
@@ -232,7 +242,8 @@ parameters.  Keys in this hash ref are the parameter's name, the value
 is the parameter's value.  (If you enable the C<preserve_params>
 option there is an additional key populated, called C<params>.  It is
 an array ref of hash refs, each hash ref is the parameter's name and
-the parameter's value - these are collected in the order they are encountered to prevent hash collisions as seen in some vCard files)
+the parameter's value - these are collected in the order they are
+encountered to prevent hash collisions as seen in some vCard files)
 line.)
 
 The third key in the top level C<objects> hash ref is C<objects>.  If
@@ -285,9 +296,6 @@ C<\,>, we're still undecided as to whether this is a bug.
 =head1 BUGS
 
 Aside from the TODO list items, none known.
-
-Bugs should be reported to me via the CPAN RT system.
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Text::vFile::asData>.
 
 =head1 SEE ALSO
 
