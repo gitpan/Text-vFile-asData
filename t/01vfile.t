@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Test::More tests => 21;
+use Test::More;
 
 if (eval "require Test::Differences") {
     no warnings 'redefine';
@@ -225,6 +225,23 @@ is_deeply( $p->parse_lines(
            },
            "quoted params colon in the value" );
 
+# Richard Russo points out this one
+is_deeply( $p->parse_lines( q{ORGANIZER;CN="Will O'the Wisp":William} ),
+           {
+               properties => {
+                   ORGANIZER => [
+                       {
+                           param  => {
+                               CN => "Will O'the Wisp",
+                           },
+                           value => 'William',
+                       },
+                   ],
+               },
+           },
+           "quoted param with embedded quote marks" );
+
+
 # Leo's corner case; you will sometimes have two params with the same
 # names (pesky vCards)
 is_deeply( $p->parse_lines( 'FOO;corner=fruit;corner=case:BAZ' ),
@@ -270,3 +287,5 @@ my $data = $p->parse( $fh );
 ok( 1, "didn't segfault on parsing an embedded image" );
 ok( exists $data->{objects}[0]{properties}{PHOTO}[0]{param}{BASE64},
     "Looks like we handled the vcard too" );
+
+done_testing();

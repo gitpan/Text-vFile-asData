@@ -4,7 +4,7 @@ use warnings;
 no warnings 'uninitialized';
 use base qw( Class::Accessor::Chained::Fast );
 __PACKAGE__->mk_accessors(qw( preserve_params ));
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 =head1 NAME
 
@@ -75,7 +75,7 @@ sub parse_line {
             # pull the character off to take a looksee
             $text =~ s{(.)}{};
             my $char = $1;
-            if ($char =~ m{['"]} && !$escaped) {
+            if ($char =~ m{['"]} && !$escaped && (!defined($quote) || $char eq $quote)) {
                 # either it's defined and matches, in which case we
                 # clear the quote variable, or it's undefined which
                 # makes this quote an opening quote
@@ -267,26 +267,6 @@ Copyright 2004, Richard Clamp and Nik Clayton.  All Rights Reserved.
 
 This program is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.
-
-=head1 TODO
-
-=over
-
-=item
-
-More comprehensive tests, especially for the nacsent generate routine.
-
-=item
-
-Write some higher-level modules that use this to create DateTime::*
-objects via DateTime::Format::ICal and DateTime::Event::ICal for
-vCalendar handling.
-
-=item
-
-Take over the world.
-
-=back
 
 =head1 CAVEATS
 

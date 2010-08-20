@@ -1,16 +1,24 @@
 ---
-name: Text-vFile-asData
-version: 0.05
-author: ~
-abstract: parse vFile formatted files into data structures
-license: perl
-requires:
-  Class::Accessor::Chained: 0
-  perl: 5.006
+abstract: 'parse vFile formatted files into data structures'
+author:
+  - 'Richard Clamp <richardc@unixbeard.net> and Nik Clayton <nik@FreeBSD.org>'
 build_requires:
-  Test::More: 0
+  Test::More: 0.88
+configure_requires:
+  Module::Build: 0.36
+generated_by: 'Module::Build version 0.3603'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Text-vFile-asData
 provides:
   Text::vFile::asData:
     file: lib/Text/vFile/asData.pm
-    version: 0.05
-generated_by: Module::Build version 0.261
+    version: 0.06
+requires:
+  Class::Accessor::Chained: 0
+  perl: 5.006
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.06
