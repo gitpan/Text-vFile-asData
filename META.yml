@@ -1,24 +1,22 @@
----
-abstract: 'parse vFile formatted files into data structures'
-author:
-  - 'Richard Clamp <richardc@unixbeard.net> and Nik Clayton <nik@FreeBSD.org>'
-build_requires:
-  Test::More: 0.88
+--- #YAML:1.0
+name:               Text-vFile-asData
+version:            0.07
+abstract:           ~
+author:  []
+license:            unknown
+distribution_type:  module
 configure_requires:
-  Module::Build: 0.36
-generated_by: 'Module::Build version 0.3603'
-license: perl
-meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.4.html
-  version: 1.4
-name: Text-vFile-asData
-provides:
-  Text::vFile::asData:
-    file: lib/Text/vFile/asData.pm
-    version: 0.06
+    ExtUtils::MakeMaker:  0
+build_requires:
+    ExtUtils::MakeMaker:  0
 requires:
-  Class::Accessor::Chained: 0
-  perl: 5.006
-resources:
-  license: http://dev.perl.org/licenses/
-version: 0.06
+    Class::Accessor::Chained:  0
+    Test::More:           0.88
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.56
+meta-spec:
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4
