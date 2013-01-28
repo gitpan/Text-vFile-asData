@@ -4,7 +4,7 @@ use warnings;
 no warnings 'uninitialized';
 use base qw( Class::Accessor::Chained::Fast );
 __PACKAGE__->mk_accessors(qw( preserve_params ));
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 =head1 NAME
 
@@ -75,11 +75,11 @@ sub parse_line {
             # pull the character off to take a looksee
             $text =~ s{(.)}{};
             my $char = $1;
-            if ($char =~ m{['"]} && !$escaped && (!defined($quote) || $char eq $quote)) {
+            if ($char eq '"' && !$escaped) {
                 # either it's defined and matches, in which case we
                 # clear the quote variable, or it's undefined which
                 # makes this quote an opening quote
-                $quote = (defined $quote && $char eq $quote) ? undef : $char;
+                $quote = !$quote;
                 $current .= $char if $keep;
             }
             else {
@@ -263,7 +263,7 @@ Richard Clamp <richardc@unixbeard.net> and Nik Clayton <nik@FreeBSD.org>
 
 =head1 COPYRIGHT
 
-Copyright 2004, Richard Clamp and Nik Clayton.  All Rights Reserved.
+Copyright 2004, 2010, 2013 Richard Clamp and Nik Clayton.  All Rights Reserved.
 
 This program is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.
